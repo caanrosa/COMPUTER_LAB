@@ -8,6 +8,9 @@ def printTitle(title, centerNum=64):
 def printSubtitle(subtitle, centerNum=64):
     print (colored(f" {subtitle} ".center(centerNum), "light_grey"))
     
+def printError(error, centerNum=64):
+    print (colored(f" {error} ".center(centerNum), "red"))
+    
 def printOption(number, option, colorNumber="red", colorOption="white"):
     op = colored(f" ({number})", colorNumber) + colored(f" {option} ", colorOption)
     
