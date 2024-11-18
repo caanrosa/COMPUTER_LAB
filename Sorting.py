@@ -1,3 +1,12 @@
+import socket
+import threading
+from config import CONFIG_PARAMS
+from ConsoleUtils import *
+
+# Configuration Parameters
+SERVER_IP_ADDRESS = CONFIG_PARAMS['SERVER_IP_ADDRESS']
+SERVER_PORT = CONFIG_PARAMS['SERVER_PORT']
+
 from typing import List
 from ConsoleUtils import printError
 
@@ -6,6 +15,35 @@ class Sorting():
         self.n = None
         self.vector: List[int] = []
         self.loaded = False
+        
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket.connect((SERVER_IP_ADDRESS, SERVER_PORT))
+        
+        receive_thread = threading.Thread(target=self.receive_messages)
+        receive_thread.daemon = True
+        receive_thread.start()
+        
+        self.alive = True
+        
+    # (Handler) Recibir los mensajes del servidor
+    def receive_messages(self):
+        try:
+            while True:
+                message = self.client_socket.recv(2048)
+                if not message:
+                    break
+                print('\r', end='')
+                printServerMessage(message.decode('utf-8'))
+        except Exception as ex:
+            printError(f"Error recibiendo mensajes: {ex}")
+        finally:
+            self.disconnect()
+
+    # Desconectarse del servidor
+    def disconnect(self):
+        printSubtitle("Desconectando del servidor...")
+        self.alive = False
+        self.client_socket.close()
         
     def setN(self, n: int):
         self.n = n

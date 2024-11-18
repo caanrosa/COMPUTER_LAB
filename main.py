@@ -5,11 +5,8 @@ import random
 VECTOR_FILE = "generated.txt"
 sortingManager = Sorting()
 
-
 def main():
-    running = True
-
-    while (running):
+    while (sortingManager.alive):
         printTitle("MENU PRINCIPAL")
         printOption(1, "Mergesort")
         printOption(2, "Heapsort")
@@ -30,7 +27,7 @@ def main():
                 printSubtitle("Genera N números aleatorios")
                 gen_random_n(getInputInt())
             case 0:
-                running = False
+                sortingManager.disconnect()
 
 
 def gen_random_n(n: int) -> None:

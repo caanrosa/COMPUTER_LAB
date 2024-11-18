@@ -8,6 +8,9 @@ def printTitle(title, centerNum=64):
 def printSubtitle(subtitle, centerNum=64):
     print (colored(f" {subtitle} ".center(centerNum), "light_grey"))
     
+def printServerMessage(msg, centerNum=64):
+    print (colored(f"🌐 {msg} ".center(centerNum), "white"))
+    
 def printError(error, centerNum=64):
     print (colored(f" {error} ".center(centerNum), "red"))
     
