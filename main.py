@@ -6,7 +6,8 @@ VECTOR_FILE = "generated.txt"
 sortingManager = Sorting()
 
 def main():
-    while (sortingManager.alive):
+    running = True
+    while (running):
         printTitle("MENU PRINCIPAL")
         printOption(1, "Mergesort")
         printOption(2, "Heapsort")
@@ -19,14 +20,15 @@ def main():
         printBottom()
 
         match option:
-            case 1:
+            case 1 | 2 | 3:
                 prepare_sorting()
-                sortingManager.mergesort()
+                sortingManager.sort(option)
 
             case -1:
                 printSubtitle("Genera N números aleatorios")
                 gen_random_n(getInputInt())
             case 0:
+                running = False
                 sortingManager.disconnect()
 
 

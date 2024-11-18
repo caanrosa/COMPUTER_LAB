@@ -4,6 +4,8 @@ from config import CONFIG_PARAMS
 from typing import List
 import socket
 import threading
+import pickle
+import struct
 
 # Configuration Parameters
 IP_ADDRESS = CONFIG_PARAMS['SERVER_IP_ADDRESS']
@@ -27,20 +29,43 @@ def broadcast(message: bytes, client_socket: "socket.socket") -> None:
                 client.close()
                 remove_client(client)
 
+def merge_sort(data):
+    printTitle("Usando Mergesort")
+    printClientMessage(data)
+    printClientMessage(len(data))
+    
+def heap_sort(data):
+    printTitle("Usando Heapsort")
+    printClientMessage(data)
+    
+def quick_sort(data):
+    printTitle("Usando Quicksort")
+    printClientMessage(data)
 
 # Handle Client Method (Clients Secondary Threads)
 def handle_client(client_socket: "socket.socket", client_address: "socket._RetAddress") -> None:
     try:
         client_socket.sendall(b'Conectado con el servidor')
         
+        data = []
         while True:
-            message = client_socket.recv(2048)
-            if not message:
-                remove_client(client_socket)
-                break
-            print(f'<{client_address[0]}>', message.decode('utf-8'))
-            message_to_send = bytes(f'<{client_address[0]}> {message.decode('utf-8')}', 'utf-8')
-            broadcast(message_to_send, client_socket)
+            toUnpack = client_socket.recv(4)
+            size = struct.unpack("I", toUnpack)
+            size = size[0]
+            
+            data = client_socket.recv(size)
+            vector = pickle.loads(data)
+            
+            type = struct.unpack("I", client_socket.recv(4))[0]
+            
+            match type:
+                case 1: # MERGESORT
+                    merge_sort(vector)
+                case 2: # HEAPSORT
+                    heap_sort(vector)
+                case 3: # QUICKSORT
+                    quick_sort(vector)
+                    
     except Exception as ex:
         printError(f'Error en cliente {client_address[0]}: {ex}')
         remove_client(client_socket)

@@ -1,5 +1,7 @@
 import socket
 import threading
+import pickle
+import struct
 from config import CONFIG_PARAMS
 from ConsoleUtils import *
 
@@ -16,6 +18,9 @@ class Sorting():
         self.vector: List[int] = []
         self.loaded = False
         
+        self.__connect()
+                
+    def __connect(self):        
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket.connect((SERVER_IP_ADDRESS, SERVER_PORT))
         
@@ -24,7 +29,7 @@ class Sorting():
         receive_thread.start()
         
         self.alive = True
-        
+    
     # (Handler) Recibir los mensajes del servidor
     def receive_messages(self):
         try:
@@ -50,6 +55,7 @@ class Sorting():
         return self
         
     def load(self, fileName: str):
+        self.vector = []
         if(self.n is None):
             printError("No se puede cargar, no se ha definido N: Sorting.setN()")
             return None
@@ -67,26 +73,15 @@ class Sorting():
         self.loaded = True        
         return self
     
-    def mergesort(self):
+    def sort(self, type: int):        
+        if(not self.alive):
+            printError("No existe una conexión, cerrando cliente.")
+            return None
         if(not self.loaded):
             printError("No se puede organizar, no se ha cargado el vector: Sorting.load()")
-            return None
+            return None        
         
-        # TODO
-        pass
-    
-    def heapsort(self):
-        if(not self.loaded):
-            printError("No se puede organizar, no se ha cargado el vector: Sorting.load()")
-            return None
-        
-        # TODO
-        pass
-    
-    def quicksort(self):
-        if(not self.loaded):
-            printError("No se puede organizar, no se ha cargado el vector: Sorting.load()")
-            return None
-        
-        # TODO
-        pass
+        data = pickle.dumps(self.vector)
+        self.client_socket.send(struct.pack("I", len(data))) # Información guardada en 4 bytes - 32 bits - "int" --- https://docs.python.org/3/library/struct.html#format-characters 
+        self.client_socket.send(data) # La información enviada arriba incluye la cantidad de información que se envió
+        self.client_socket.send(struct.pack("I", type))
