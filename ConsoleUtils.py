@@ -7,9 +7,12 @@ def printTitle(title, centerNum=64):
     
 def printSubtitle(subtitle, centerNum=64):
     print (colored(f" {subtitle} ".center(centerNum), "light_grey"))
+
+def printInfo(info, centerNum=64):
+    print (colored(f"🗣️ {info} ".center(centerNum), "green"))
     
 def printServerMessage(msg, centerNum=64):
-    print (colored(f"🌎 {msg} ".center(centerNum), "white"))
+    print (colored(f"🌎 {msg} ".center(centerNum), "white"), flush = True)
     
 def printClientMessage(msg, centerNum=64):
     print (colored(f"👤 {msg} ".center(centerNum), "white"))

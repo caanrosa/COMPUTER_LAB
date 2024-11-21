@@ -34,11 +34,16 @@ class Sorting():
     def receive_messages(self):
         try:
             while True:
-                message = self.client_socket.recv(2048)
-                if not message:
+                toUnpack = self.client_socket.recv(4)
+                if not toUnpack:
                     break
+                size = struct.unpack("I", toUnpack)
+                size = size[0]
+            
+                data = self.client_socket.recv(size)
+                message = pickle.loads(data)
                 print('\r', end='')
-                printServerMessage(message.decode('utf-8'))
+                printServerMessage(message)
         except Exception as ex:
             printError(f"Error recibiendo mensajes: {ex}")
         finally:
@@ -61,12 +66,24 @@ class Sorting():
             return None
         try:
             with open(f"./vectors/{fileName}", "r") as file:
-                for i in range(0, self.n):
-                    line = file.readline()
-                    if(len(line) > 0):
-                        self.vector.append(int(line))
-                    else:
-                        break
+                if(self.n == -1):
+                    i = 0
+                    while(True):
+                        line = file.readline()
+                        if(len(line) > 0):
+                            self.vector.append(int(line))
+                            i += 1
+                        else:
+                            self.setN(i)
+                            break
+                else:
+                    for i in range(0, self.n):
+                        line = file.readline()
+                        if(len(line) > 0):
+                            self.vector.append(int(line))
+                        else:
+                            self.setN(i)
+                            break
         except Exception as e:
             printError(f"Ocurrió un error inesperado cargando el archivo de números:\n{e}")
         

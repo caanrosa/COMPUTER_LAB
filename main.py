@@ -2,7 +2,7 @@ from ConsoleUtils import *
 from Sorting import *
 import random
 
-VECTOR_FILE = "generated.txt"
+VECTOR_FILE = "simple.txt"
 sortingManager = Sorting()
 
 def main():
@@ -39,7 +39,7 @@ def gen_random_n(n: int) -> None:
 
 
 def prepare_sorting() -> None:
-    printSubtitle("Especifique cuántas N posiciones.")
+    printSubtitle("Especifique cuántas N posiciones. -1 Para todas las posibles.")
     n = getInputInt()
 
     sortingManager.setN(n)
