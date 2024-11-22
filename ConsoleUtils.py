@@ -48,3 +48,19 @@ def getInputInt() -> int:
             p = False
     
     return int(recieved)
+
+
+def getTInput() -> int:
+    recieved = ""
+    p = False
+    
+    while(not p):
+        recieved = getInput()
+        try:
+            float(recieved)
+            if(float(recieved) <= 0): p = False
+            else: p = True
+        except ValueError:
+            p = False
+    
+    return float(recieved)

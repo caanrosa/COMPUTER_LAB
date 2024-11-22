@@ -41,8 +41,6 @@ def sendToAllClients(data) -> None:
 # MERGE
 def merge_sort(data):
     printTitle("Usando Mergesort")
-    printClientMessage(data)
-    printClientMessage(len(data))
     
     data = __merge_sort(data)
     printBottom()
@@ -107,16 +105,12 @@ def __divide(V: list):#
 # HEAP
 def heap_sort(data):
     printTitle("Usando Heapsort")
-    printClientMessage(data)
-    printClientMessage(len(data))
     
     return data
 
 # QUICK
 def quick_sort(data):    
     printTitle("Usando Quicksort")
-    printClientMessage(data)
-    printClientMessage(len(data))
     
     __quick_sort(data, 0, len(data) - 1)
     
@@ -164,6 +158,10 @@ def handle_client(client_socket: "socket.socket", client_address: "socket._RetAd
             vector = pickle.loads(data)
             
             type = struct.unpack("I", client_socket.recv(4))[0]
+            time = struct.unpack("f", client_socket.recv(4))[0]
+            
+            printClientMessage(vector)
+            printClientMessage(f"{len(vector)} elems. - Max: {time}s")
             
             match type:
                 case 1: # MERGESORT

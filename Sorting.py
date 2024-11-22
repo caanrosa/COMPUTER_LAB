@@ -90,7 +90,7 @@ class Sorting():
         self.loaded = True        
         return self
     
-    def sort(self, type: int):        
+    def sort(self, type: int, time: float):        
         if(not self.alive):
             printError("No existe una conexión, cerrando cliente.")
             return None
@@ -102,3 +102,4 @@ class Sorting():
         self.client_socket.send(struct.pack("I", len(data))) # Información guardada en 4 bytes - 32 bits - "int" --- https://docs.python.org/3/library/struct.html#format-characters 
         self.client_socket.send(data) # La información enviada arriba incluye la cantidad de información que se envió
         self.client_socket.send(struct.pack("I", type))
+        self.client_socket.send(struct.pack("f", time)) # Float también se guarda en 4 bytes

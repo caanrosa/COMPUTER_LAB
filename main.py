@@ -6,12 +6,14 @@ VECTOR_FILE = "simple.txt"
 sortingManager = Sorting()
 
 def main():
+    t = 15.0
     running = True
     while (running):
         printTitle("MENU PRINCIPAL")
         printOption(1, "Mergesort")
         printOption(2, "Heapsort")
         printOption(3, "Quicksort")
+        printOption(4, f"Definir `t`. Actual: {t}s")
         printOption(-1, "Gen random N")
         printOption(0, "Salir")
         printBottom()
@@ -22,8 +24,11 @@ def main():
         match option:
             case 1 | 2 | 3:
                 prepare_sorting()
-                sortingManager.sort(option)
+                sortingManager.sort(option, t)
 
+            case 4:
+                printSubtitle("Defina un `t` positivo")
+                t = getTInput()
             case -1:
                 printSubtitle("Genera N números aleatorios")
                 gen_random_n(getInputInt())
