@@ -106,7 +106,45 @@ def __divide(V: list):#
 def heap_sort(data):
     printTitle("Usando Heapsort")
     
+    data = heapsort(data)  
+    
+    printSubtitle("RESULTADO")
+    printInfo(data)
+    
     return data
+
+def heapify(V, n, i):
+    
+    largest = i  # Asumimos que el nodo raíz es el más grande
+    left = 2 * i + 1  # Índice del hijo izquierdo
+    right = 2 * i + 2  # Índice del hijo derecho
+
+    # Verificar si el hijo izquierdo existe y es mayor que la raíz
+    if left < n and V[left] > V[largest]:
+        largest = left
+
+    # Verificar si el hijo derecho existe y es mayor que la raíz actual
+    if right < n and V[right] > V[largest]:
+        largest = right
+
+    # Si el nodo raíz no es el más grande, intercambiarlo con el más grande
+    if largest != i:
+        V[i], V[largest] = V[largest], V[i]
+        heapify(V, n, largest)
+
+def heapsort(V):
+    n = len(V)
+
+    # Construir el montículo máximo (heap)
+    for i in range(n // 2 - 1, -1, -1):
+        heapify(V, n, i)
+
+    # Extraer elementos del montículo uno por uno
+    for i in range(n - 1, 0, -1):
+        V[0], V[i] = V[i], V[0]
+        heapify(V, i, 0)
+    
+    return V  # Devolver la lista ordenada
 
 # QUICK
 def quick_sort(data):    
