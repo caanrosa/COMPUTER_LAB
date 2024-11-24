@@ -149,34 +149,33 @@ def heapsort(V):
     return V  # Devolver la lista ordenada
 
 # QUICK
-def quick_sort(data, time):    
-    printTitle("Usando Quicksort")
+def quick_sort(data, time):
     limit = Timelimit(time)
-    
-    __quick_sort(data, 0, len(data) - 1)
-    
-    return data, limit
+    __quick_sort(data, 0, len(data) - 1, limit)
+    return (limit.lastData if limit.lastData else data, limit)
 
-def __quick_sort(V, low, high):
-    if(low < high):
+def __quick_sort(V, low, high, limit):
+    if low < high:
+        if limit.reachedLimit():
+            limit.setLastData(V)  # Guarda el progreso antes de detenerse
+            return
+        
         pi = __partition(V, low, high)
         
-        if(DEBUG): printInfo(V)    
-        __quick_sort(V, low, pi - 1)
-        if(DEBUG): printInfo(V)
-        __quick_sort(V, pi + 1, high)
-        if(DEBUG):
-            printInfo(V)        
-            printBottom()
-        
+        if DEBUG: print(V)
+        __quick_sort(V, low, pi - 1, limit)
+        if DEBUG: print(V)
+        __quick_sort(V, pi + 1, high, limit)
+        if DEBUG: print(V)
+
+        limit.setLastData(V)  # Guarda el progreso después de cada partición
+
 def __partition(V, low, high):
     pivot = V[high]
     i = low - 1
-    for j in range(low, high, 1):
-        if(V[j] <= pivot):
+    for j in range(low, high):
+        if V[j] <= pivot:
             i = i + 1
-            (V[i], V[j]) = (V[j], V[i])
-    
-    (V[i + 1], V[high]) = (V[high], V[i + 1])
-    
+            V[i], V[j] = V[j], V[i]
+    V[i + 1], V[high] = V[high], V[i + 1]
     return i + 1
