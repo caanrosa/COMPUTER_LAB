@@ -49,8 +49,12 @@ class Client():
                 
                 #print(f"recieving: {size}")
             
-                data = self.worker.recv(size)
-                message = pickle.loads(data)
+                dataRecieved = []
+                while(len(b"".join(dataRecieved)) < size):
+                    #print("Aun no!")
+                    dataRecieved.append(self.worker.recv(size - len(b"".join(dataRecieved))))
+                message = pickle.loads(b"".join(dataRecieved))
+                
                 if(type(message) == list):
                     printInfo(f"Guardando vector en `{self.name}Response.txt`")
                     self.sortedVector = message
