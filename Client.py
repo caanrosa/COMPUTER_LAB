@@ -62,7 +62,6 @@ class Client():
                     printServerMessage(message)
         except Exception:
             printError(f"Error recibiendo mensajes: {traceback.format_exc()}")
-            print(len(data))
             
         finally:
             self.disconnect()
