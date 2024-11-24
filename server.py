@@ -76,9 +76,9 @@ class Worker():
                     case 1: # MERGESORT
                         res, limit = merge_sort(vector, time, startIndex)
                     case 2: # HEAPSORT
-                        res = heap_sort(vector, time)
+                        res, limit = heap_sort(vector, time)
                     case 3: # QUICKSORT
-                        res = quick_sort(vector, time)
+                        res, limit = quick_sort(vector, time)
                 
                 if(limit.maxReached):
                     printTitle("Looking for Worker_1")                    

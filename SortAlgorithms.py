@@ -109,10 +109,11 @@ def __divide(V: list):#
 # HEAP
 def heap_sort(data, time):
     printTitle("Usando Heapsort")
+    limit = Timelimit(time)
     
     data = heapsort(data)
     
-    return data
+    return data, limit
 
 def heapify(V, n, i):
     
@@ -150,10 +151,11 @@ def heapsort(V):
 # QUICK
 def quick_sort(data, time):    
     printTitle("Usando Quicksort")
+    limit = Timelimit(time)
     
     __quick_sort(data, 0, len(data) - 1)
     
-    return data
+    return data, limit
 
 def __quick_sort(V, low, high):
     if(low < high):
