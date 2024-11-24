@@ -6,6 +6,7 @@ import socket
 import threading
 import pickle
 import struct
+from SortAlgorithms import merge_sort, heap_sort, quick_sort
 
 # Configuration Parameters
 IP_ADDRESS = CONFIG_PARAMS['SERVER_IP_ADDRESS']
@@ -38,149 +39,6 @@ def sendToAllClients(data) -> None:
             client.close()
             remove_client(client)
 
-# MERGE
-def merge_sort(data):
-    printTitle("Usando Mergesort")
-    
-    data = __merge_sort(data)
-    printBottom()
-    
-    printSubtitle("RESULTADO")
-    printInfo(data)
-    
-    return data
-
-def __merge_sort(V: List):
-    printBottom()
-    printSubtitle("V Entrada:")
-    printInfo(V)
-    # Si la long es de 1, no es necesario hacer nada más
-    if(len(V) <= 1):
-        return V
-    
-    # Si la lista aún tiene más de 2 elementos, se puede seguir dividiendo
-    first, second = __divide(V)
-    first = __merge_sort(first)
-    second = __merge_sort(second)
-    
-    printSubtitle("Uniendo vectores ordenados")
-    printInfo(f"{len(first)}: {first}")
-    printInfo(f"{len(second)}: {second}")
-    
-    ordered = __merge(first, second)    
-    return ordered
-    
-def __merge(v1: list, v2: list):
-    merged = []
-    
-    left = right = 0
-    
-    while left < len(v1) and right < len(v2):
-        # Se compara de a pares los elementos de ambas listas para organizarlas
-        if(v1[left] < v2[right]):
-            merged.append(v1[left])
-            left += 1
-        else:
-            merged.append(v2[right])
-            right += 1
-        
-    # Apenas se llegue al limite de alguno de los subvectores, se sale del while.
-    printInfo(f"MaxLeft: {left}: {v1}")
-    printInfo(f"MaxRight: {right}: {v2}")
-    
-    # Agregar al resultado cualquiera que sea el que le falta por terminar al vector resultado
-    # Sea cual sea, si este está en el limite y se intenta "extender" no pasará nada
-    merged.extend(v1[left:])
-    merged.extend(v2[right:])
-    
-    printSubtitle("Subvector ordenado:")
-    printInfo(merged)
-    
-    return merged
-        
-def __divide(V: list):#
-    mid = len(V) // 2
-    return V[:mid], V[mid:]
-    
-# HEAP
-def heap_sort(data):
-    printTitle("Usando Heapsort")
-    
-    data = heapsort(data)  
-    
-    printSubtitle("RESULTADO")
-    printInfo(data)
-    
-    return data
-
-def heapify(V, n, i):
-    
-    largest = i  # Asumimos que el nodo raíz es el más grande
-    left = 2 * i + 1  # Índice del hijo izquierdo
-    right = 2 * i + 2  # Índice del hijo derecho
-
-    # Verificar si el hijo izquierdo existe y es mayor que la raíz
-    if left < n and V[left] > V[largest]:
-        largest = left
-
-    # Verificar si el hijo derecho existe y es mayor que la raíz actual
-    if right < n and V[right] > V[largest]:
-        largest = right
-
-    # Si el nodo raíz no es el más grande, intercambiarlo con el más grande
-    if largest != i:
-        V[i], V[largest] = V[largest], V[i]
-        heapify(V, n, largest)
-
-def heapsort(V):
-    n = len(V)
-
-    # Construir el montículo máximo (heap)
-    for i in range(n // 2 - 1, -1, -1):
-        heapify(V, n, i)
-
-    # Extraer elementos del montículo uno por uno
-    for i in range(n - 1, 0, -1):
-        V[0], V[i] = V[i], V[0]
-        heapify(V, i, 0)
-    
-    return V  # Devolver la lista ordenada
-
-# QUICK
-def quick_sort(data):    
-    printTitle("Usando Quicksort")
-    
-    __quick_sort(data, 0, len(data) - 1)
-    
-    printSubtitle("RESULTADO")
-    printInfo(data)
-    
-    return data
-
-def __quick_sort(V, low, high):
-    if(low < high):
-        pi = __partition(V, low, high)
-        
-        printInfo(V)    
-        __quick_sort(V, low, pi - 1)
-        printInfo(V)
-        __quick_sort(V, pi + 1, high)
-        printInfo(V)
-        
-        printBottom()
-        
-def __partition(V, low, high):
-    pivot = V[high]
-    i = low - 1
-    for j in range(low, high, 1):
-        if(V[j] <= pivot):
-            i = i + 1
-            (V[i], V[j]) = (V[j], V[i])
-    
-    (V[i + 1], V[high]) = (V[high], V[i + 1])
-    
-    return i + 1
-
 # Handle Client Method (Clients Secondary Threads)
 def handle_client(client_socket: "socket.socket", client_address: "socket._RetAddress") -> None:
     try:
@@ -198,17 +56,22 @@ def handle_client(client_socket: "socket.socket", client_address: "socket._RetAd
             type = struct.unpack("I", client_socket.recv(4))[0]
             time = struct.unpack("f", client_socket.recv(4))[0]
             
-            printClientMessage(vector)
+            printClientMessage("Vector recibido")
+            #printClientMessage(vector)
             printClientMessage(f"{len(vector)} elems. - Max: {time}s")
             
             match type:
                 case 1: # MERGESORT
-                    res = merge_sort(vector)
+                    res, limit = merge_sort(vector, time)
                 case 2: # HEAPSORT
-                    res = heap_sort(vector)
+                    res = heap_sort(vector, time)
                 case 3: # QUICKSORT
-                    res = quick_sort(vector)
-                    
+                    res = quick_sort(vector, time)
+            
+            if(limit.maxReached):
+                printTitle("AGAIN!")
+                res, limit = merge_sort(res, 0, res.index(limit.lastData[0]))
+            printSubtitle("Enviando resultado a cliente")  
             sendToClient(res, client_socket)
                     
     except Exception as ex:

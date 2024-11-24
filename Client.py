@@ -12,7 +12,7 @@ SERVER_PORT = CONFIG_PARAMS['SERVER_PORT']
 from typing import List
 from ConsoleUtils import printError
 
-class Sorting():
+class Client():
     def __init__(self):
         self.n = None
         self.vector: List[int] = []
@@ -20,7 +20,7 @@ class Sorting():
         
         self.__connect()
                 
-    def __connect(self):        
+    def __connect(self):
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket.connect((SERVER_IP_ADDRESS, SERVER_PORT))
         
@@ -42,8 +42,14 @@ class Sorting():
             
                 data = self.client_socket.recv(size)
                 message = pickle.loads(data)
-                print('\r', end='')
-                printServerMessage(message)
+                if(type(message) == list):
+                    printInfo("Guardando vector en `response.txt`")
+                    with open("./vectors/response.txt", "w") as file:
+                        for el in message:
+                            file.write(f"{el}\n")
+                else:
+                    print('\r', end='')
+                    printServerMessage(message)
         except Exception as ex:
             printError(f"Error recibiendo mensajes: {ex}")
         finally:
