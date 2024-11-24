@@ -1,6 +1,9 @@
 # Configuration Parameters
 CONFIG_PARAMS = {
-    'SERVER_IP_ADDRESS': 'localhost',
-    'SERVER_PORT': 8081,
-    'SERVER_MAX_CLIENTS': 1
+    'WORKER0_IP_ADDRESS': 'localhost',
+    'WORKER0_PORT': 8081,
+    'WORKER0_MAX_CLIENTS': 1,
+    'WORKER1_IP_ADDRESS': 'localhost',
+    'WORKER1_PORT': 8082,
+    'WORKER1_MAX_CLIENTS': 1
 }

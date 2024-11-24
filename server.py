@@ -7,107 +7,132 @@ import threading
 import pickle
 import struct
 from SortAlgorithms import merge_sort, heap_sort, quick_sort
+from Client import *
 
 # Configuration Parameters
-IP_ADDRESS = CONFIG_PARAMS['SERVER_IP_ADDRESS']
-PORT = CONFIG_PARAMS['SERVER_PORT']
-MAX_CLIENTS = CONFIG_PARAMS['SERVER_MAX_CLIENTS']
-LIST_OF_CLIENTS: List["socket.socket"] = []
+IP_ADDRESS = CONFIG_PARAMS['WORKER0_IP_ADDRESS']
+PORT = CONFIG_PARAMS['WORKER0_PORT']
 
-# Remove Client from List of Clients
-def remove_client(client_socket: "socket.socket") -> None:
-    if client_socket in LIST_OF_CLIENTS:
-        LIST_OF_CLIENTS.remove(client_socket)
-
-def sendToClient(data, client_socket: "socket.socket"):
-    try:
-        # Misma lógica usada para enviar el vector desde el cliente, pero esta vez hacia él
-        data = pickle.dumps(data)
-        client_socket.send(struct.pack("I", len(data)))
-        client_socket.send(data)
-    except Exception as ex:
-        client_socket.close()
-        remove_client(client_socket)
-
-def sendToAllClients(data) -> None:
-    for client in LIST_OF_CLIENTS:
-        try:
-            data = pickle.dumps(data)
-            client.send(struct.pack("I", len(data)))
-            client.send(data)
-        except Exception as ex:
-            client.close()
-            remove_client(client)
-
-# Handle Client Method (Clients Secondary Threads)
-def handle_client(client_socket: "socket.socket", client_address: "socket._RetAddress") -> None:
-    try:
-        sendToClient('Conectado con el servidor', client_socket)
+class Worker():
+    def __init__(self):
         
-        data = []
-        while True:
-            toUnpack = client_socket.recv(4)
-            size = struct.unpack("I", toUnpack)
-            size = size[0]
+        printTitle("Configuracion inicial")
+        printOption(1, "Worker_0")
+        printOption(2, "Worker_1")
+        
+        op = 0
+        while(op < 1 or op > 2):
+            op = getInputInt()
+        
+        self.IP = CONFIG_PARAMS[f'WORKER{op-1}_IP_ADDRESS']
+        self.PORT = CONFIG_PARAMS[f'WORKER{op-1}_PORT']
+        self.MAX_CLIENTS = CONFIG_PARAMS[f'WORKER{op-1}_MAX_CLIENTS']
+        self.LIST_OF_CLIENTS: List["socket.socket"] = []
+        
+        printBottom()
+        
+        self.start_server()
+        
+
+    # Remove Client from List of Clients
+    def remove_client(self, client_socket: "socket.socket") -> None:
+        if client_socket in self.LIST_OF_CLIENTS:
+            self.LIST_OF_CLIENTS.remove(client_socket)
+
+    def sendToClient(self, data, client_socket: "socket.socket"):
+        try:
+            # Misma lógica usada para enviar el vector desde el cliente, pero esta vez hacia él
+            data = pickle.dumps(data)
+            client_socket.sendall(struct.pack("i", len(data)))
+            #print(f"sending: {len(data)}")
+            client_socket.sendall(data)
+        except Exception as ex:
+            client_socket.close()
+            self.remove_client(client_socket)
+
+    # Handle Client Method (Clients Secondary Threads)
+    def handle_client(self, client_socket: "socket.socket", client_address: "socket._RetAddress") -> None:
+        try:
+            self.sendToClient('Conectado con el servidor', client_socket)
             
-            data = client_socket.recv(size)
-            vector = pickle.loads(data)
-            
-            type = struct.unpack("I", client_socket.recv(4))[0]
-            time = struct.unpack("f", client_socket.recv(4))[0]
-            
-            printClientMessage("Vector recibido")
-            #printClientMessage(vector)
-            printClientMessage(f"{len(vector)} elems. - Max: {time}s")
-            
-            match type:
-                case 1: # MERGESORT
-                    res, limit = merge_sort(vector, time)
-                case 2: # HEAPSORT
-                    res = heap_sort(vector, time)
-                case 3: # QUICKSORT
-                    res = quick_sort(vector, time)
-            
-            if(limit.maxReached):
-                printTitle("AGAIN!")
-                res, limit = merge_sort(res, 0, res.index(limit.lastData[0]))
-            printSubtitle("Enviando resultado a cliente")  
-            sendToClient(res, client_socket)
-                    
-    except Exception as ex:
-        printError(f'Error en cliente {client_address[0]}: {ex}')
-        remove_client(client_socket)
-    finally:
-        client_socket.close()
+            data = []
+            while True:
+                toUnpack = client_socket.recv(4)
+                size = struct.unpack("i", toUnpack)
+                size = size[0]
+                
+                data = client_socket.recv(size)
+                vector = pickle.loads(data)
+                
+                type = struct.unpack("i", client_socket.recv(4))[0]
+                time = struct.unpack("f", client_socket.recv(4))[0]
+                startIndex = struct.unpack("i", client_socket.recv(4))[0]
+                
+                printClientMessage("Vector recibido")
+                #printClientMessage(vector)
+                printClientMessage(f"{len(vector)} elems. - Max: {time}s - Desde posición {startIndex}")
+                
+                match type:
+                    case 1: # MERGESORT
+                        res, limit = merge_sort(vector, time, startIndex)
+                    case 2: # HEAPSORT
+                        res = heap_sort(vector, time)
+                    case 3: # QUICKSORT
+                        res = quick_sort(vector, time)
+                
+                if(limit.maxReached):
+                    printTitle("Looking for Worker_1")                    
+                    # TODO: Los demás tipos de sort
+                    if(type == 1):
+                        worker1 = Client("Worker1", CONFIG_PARAMS['WORKER1_IP_ADDRESS'], CONFIG_PARAMS['WORKER1_PORT'])
+                        worker1.setVector(res)
+                        worker1.sort(type, 0, res.index(limit.lastData[0]))
+                        printSubtitle("Esperando respuesta de Worker_1...")
+                        
+                        waiting = True
+                        while(waiting):
+                            if(worker1.sortedVector):
+                                res = worker1.sortedVector
+                                waiting = False                            
+
+                #print(res)
+                printSubtitle("Enviando resultado a cliente")  
+                self.sendToClient(res, client_socket)
+                        
+        except Exception as ex:
+            printError(f'Error en cliente {client_address[0]}: {ex}')
+            self.remove_client(client_socket)
+        finally:
+            client_socket.close()
 
 
-def start_server() -> None:
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server_socket.bind((IP_ADDRESS, PORT))
-    server_socket.listen(MAX_CLIENTS)
+    def start_server(self) -> None:
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server_socket.bind((self.IP, self.PORT))
+        server_socket.listen(self.MAX_CLIENTS)
 
-    printSubtitle(f"Iniciando servidor en {IP_ADDRESS}:{PORT}")
+        printSubtitle(f"Iniciando servidor en {self.IP}:{self.PORT}")
 
-    try:
-        while True:
-            client_socket, client_address = server_socket.accept()
-            LIST_OF_CLIENTS.append(client_socket)
-            printInfo(client_address[0] + ' conectado')
+        try:
+            while True:
+                client_socket, client_address = server_socket.accept()
+                self.LIST_OF_CLIENTS.append(client_socket)
+                printInfo(client_address[0] + ' conectado')
 
-            client_thread = threading.Thread(
-                target=handle_client, args=(client_socket, client_address))
-            client_thread.daemon = True
-            client_thread.start()
-    except Exception as ex:
-        printError(f"Error aceptando clientes: {ex}")
-        printError("Cerrando el servidor.")
-    finally:
-        for client in LIST_OF_CLIENTS:
-            client.close()
-        server_socket.close()
+                client_thread = threading.Thread(
+                    target=self.handle_client, args=(client_socket, client_address))
+                client_thread.daemon = True
+                client_thread.start()
+        except Exception as ex:
+            printError(f"Error aceptando clientes: {ex}")
+            printError("Cerrando el servidor.")
+        finally:
+            for client in self.LIST_OF_CLIENTS:
+                client.close()
+            server_socket.close()
 
 
 if __name__ == '__main__':
     printTitle("SERVIDOR")
-    start_server()
+    Worker()
