@@ -117,7 +117,7 @@ class Client():
         self.loaded = True        
         return self
     
-    def sort(self, type: int, time: float, startIndex: int = 0):        
+    def sort(self, type: int, time: float, startInfo: int|List):        
         self.sortedVector = None
         if(not self.alive):
             printError("No existe una conexión, cerrando cliente.")
@@ -131,4 +131,7 @@ class Client():
         self.worker.sendall(data) # La información enviada arriba incluye la cantidad de información que se envió
         self.worker.sendall(struct.pack("i", type))
         self.worker.sendall(struct.pack("f", time)) # Float también se guarda en 4 bytes
-        self.worker.sendall(struct.pack("i", startIndex))
+        
+        startData = pickle.dumps(startInfo)        
+        self.worker.sendall(struct.pack("i", len(startData)))
+        self.worker.sendall(startData)

@@ -24,7 +24,7 @@ def main():
         match option:
             case 1 | 2 | 3:
                 prepare_sorting()
-                client.sort(option, t)
+                client.sort(option, t, None)
 
             case 4:
                 printSubtitle("Defina un `t` positivo")

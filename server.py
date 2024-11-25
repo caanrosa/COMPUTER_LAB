@@ -55,30 +55,37 @@ class Worker():
         try:
             self.sendToClient('Conectado con el servidor', client_socket)
             
-            data = []
             while True:
                 toUnpack = client_socket.recv(4)
                 size = struct.unpack("i", toUnpack)
                 size = size[0]
                 
-                data = client_socket.recv(size)
-                vector = pickle.loads(data)
+                dataRecieved = []
+                while(len(b"".join(dataRecieved)) < size):
+                    dataRecieved.append(client_socket.recv(size - len(b"".join(dataRecieved))))
+                vector = pickle.loads(b"".join(dataRecieved))
                 
                 type = struct.unpack("i", client_socket.recv(4))[0]
                 time = struct.unpack("f", client_socket.recv(4))[0]
-                startIndex = struct.unpack("i", client_socket.recv(4))[0]
+                
+                sizeStartInfo = struct.unpack("i", client_socket.recv(4))[0]
+                
+                startInfoRecieved = []
+                while(len(b"".join(startInfoRecieved)) < sizeStartInfo):
+                    startInfoRecieved.append(client_socket.recv(sizeStartInfo - len(b"".join(startInfoRecieved))))
+                startInfo = pickle.loads(b"".join(startInfoRecieved))
                 
                 printClientMessage("Vector recibido")
                 #printClientMessage(vector)
-                printClientMessage(f"{len(vector)} elems. - Max: {time}s - Desde posición {startIndex}")
+                printClientMessage(f"{len(vector)} elems. - Max: {time}s - Desde posición {startInfo}")
                 
                 match type:
                     case 1: # MERGESORT
-                        res, limit = merge_sort(vector, time, startIndex)
+                        res, limit = merge_sort(vector, time, startInfo)
                     case 2: # HEAPSORT
                         res, limit = heap_sort(vector, time)
                     case 3: # QUICKSORT
-                        res, limit = quick_sort(vector, time)
+                        res, limit = quick_sort(vector, time, startInfo)
                 
                 if(limit.maxReached):
                     printTitle("Looking for Worker_1")                    
@@ -96,15 +103,24 @@ class Worker():
                                 waiting = False   
                                 
                     if(type == 3):
-                        quick_sort(res, 0, limit.lastData)
+                        worker1 = Client("Worker1", CONFIG_PARAMS['WORKER1_IP_ADDRESS'], CONFIG_PARAMS['WORKER1_PORT'])
+                        worker1.setVector(res)
+                        worker1.sort(type, 0, limit.lastData)
+                        printSubtitle("Esperando respuesta de Worker_1...")
+                        
+                        waiting = True
+                        while(waiting):
+                            if(worker1.sortedVector):
+                                res = worker1.sortedVector
+                                waiting = False   
                         pass
 
                 #print(res)
                 printSubtitle("Enviando resultado a cliente")  
                 self.sendToClient(res, client_socket)
                         
-        except Exception as ex:
-            printError(f'Error en cliente {client_address[0]}: {ex}')
+        except Exception:
+            printError(f'Error en cliente {client_address[0]}: {traceback.format_exc()}')
             self.remove_client(client_socket)
         finally:
             client_socket.close()

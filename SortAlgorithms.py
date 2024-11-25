@@ -26,7 +26,10 @@ class Timelimit():
         self.lastData.append(data)
         
     def removeFromLastData(self, data):
-        self.lastData.remove(data)
+        try:
+            self.lastData.remove(data)
+        except:
+            pass
         
     def setLastData(self, lastData):
         if(self.lastData is None):
@@ -34,15 +37,14 @@ class Timelimit():
 
 # MERGE
 def merge_sort(data, time, start = 0):
+    if(start is None): start = 0
     printTitle(f"Usando Mergesort - {time}s")
     limit = Timelimit(time)
     sorting = __merge_sort(data[start:], limit)
     
     if(limit.maxReached):
         printInfo(f"Llegó al tiempo máximo: {limit.maxReached}")
-        printInfo(f"{limit.lastData[0]}")
-        printInfo(f"{limit.lastData[-1]}")
-        printInfo(f"{len(limit.lastData)}")
+        printInfo(f"Cola guardada {len(limit.lastData)} elementos")
     
     data = __merge(data[:start], sorting)
     
@@ -158,7 +160,9 @@ def heapsort(V):
 
 # QUICK
 def quick_sort(data, time, queue: List = []):
+    if(queue is None): queue = []
     printTitle("Usando Quicksort")
+    printInfo(queue)
     limit = Timelimit(time)
     
     if(len(queue) > 0):
