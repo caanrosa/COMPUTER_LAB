@@ -93,7 +93,11 @@ class Worker():
                         while(waiting):
                             if(worker1.sortedVector):
                                 res = worker1.sortedVector
-                                waiting = False                            
+                                waiting = False   
+                                
+                    if(type == 3):
+                        quick_sort(res, 0, limit.lastData)
+                        pass
 
                 #print(res)
                 printSubtitle("Enviando resultado a cliente")  

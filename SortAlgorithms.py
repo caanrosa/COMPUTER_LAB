@@ -20,6 +20,14 @@ class Timelimit():
             
         return self.maxReached
     
+    def appendToLastData(self, data):
+        if(self.lastData is None): self.lastData = []
+        
+        self.lastData.append(data)
+        
+    def removeFromLastData(self, data):
+        self.lastData.remove(data)
+        
     def setLastData(self, lastData):
         if(self.lastData is None):
             self.lastData = lastData
@@ -149,22 +157,44 @@ def heapsort(V):
     return V  # Devolver la lista ordenada
 
 # QUICK
-def quick_sort(data, time):    
+def quick_sort(data, time, queue: List = []):
     printTitle("Usando Quicksort")
     limit = Timelimit(time)
     
-    __quick_sort(data, 0, len(data) - 1)
+    if(len(queue) > 0):
+        printInfo("Hay una cola, usándola")
+        while(len(queue) > 0):
+            q = queue.pop(0)
+            __quick_sort(data, q[0], q[1], limit)
+    else:
+        __quick_sort(data, 0, len(data) - 1, limit)
+    
+    if(limit.maxReached):
+        printInfo(f"Llegó al tiempo máximo: {limit.maxReached}")
+        printInfo(f"{data[limit.lastData[-1][0]]}")
+        printInfo(f"{data[limit.lastData[-1][1]]}")
     
     return data, limit
 
-def __quick_sort(V, low, high):
+def __quick_sort(V, low, high, limit: Timelimit):
+    limit.reachedLimit()
+    
     if(low < high):
         pi = __partition(V, low, high)
         
+        if(limit.maxReached):
+            return
+        
         if(DEBUG): printInfo(V)    
-        __quick_sort(V, low, pi - 1)
+        limit.appendToLastData((pi + 1, high))
+        __quick_sort(V, low, pi - 1, limit)
+        
+        if(limit.maxReached):
+            return
         if(DEBUG): printInfo(V)
-        __quick_sort(V, pi + 1, high)
+        __quick_sort(V, pi + 1, high, limit)
+        limit.removeFromLastData((pi + 1, high))
+        
         if(DEBUG):
             printInfo(V)        
             printBottom()
