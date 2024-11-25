@@ -110,35 +110,50 @@ def __divide(V: list):#
 def heap_sort(data, time):
     printTitle(f"Usando Heapsort - {time}s")
     limit = Timelimit(time)
-
-    sorting = heapsort(data, limit)
-
-    if limit.maxReached:
-        printInfo(f"Llegó al tiempo máximo: {limit.maxReached}")
-        printInfo(f"{limit.lastData[0]}")
-        printInfo(f"{limit.lastData[-1]}")
-        printInfo(f"{len(limit.lastData)}")
-
-    return sorting, limit
-
-def heapify(V: List[int], n: int, i: int, limit: Timelimit):
     
+    # Inicializar variables necesarias para pausar y resumir
+    n = len(data)
+    heap_built = False
+    i = n - 1
+
+    # Verificar si ya se alcanzó el límite de tiempo
     if limit.reachedLimit():
+        limit.setLastData(data)
+        return data, limit
+
+    # Construir el montículo máximo (heap)
+    if not heap_built:
+        for j in range(n // 2 - 1, -1, -1):
+            if limit.reachedLimit():
+                limit.setLastData(data)
+                return data, limit
+            heapify(data, n, j)
+        heap_built = True
+
+    # Extraer elementos del montículo uno por uno
+    while i > 0:
+        if limit.reachedLimit():
+            limit.setLastData(data)
+            return data, limit
+        data[0], data[i] = data[i], data[0]
+        i -= 1
+        heapify(data, i, 0)
+
+    return data, limit
+
+def heapify(V, n, i, limit=None):
+    if limit and limit.reachedLimit():
+        limit.setLastData(V)
         return
 
-    largest = i  # Asumimos que el nodo raíz es el más grande
-    left = 2 * i + 1  # Índice del hijo izquierdo
-    right = 2 * i + 2  # Índice del hijo derecho
+    largest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
 
-    # Verificar si el hijo izquierdo existe y es mayor que la raíz
     if left < n and V[left] > V[largest]:
         largest = left
-
-    # Verificar si el hijo derecho existe y es mayor que la raíz actual
     if right < n and V[right] > V[largest]:
         largest = right
-
-    # Si el nodo raíz no es el más grande, intercambiarlo con el más grande
     if largest != i:
         V[i], V[largest] = V[largest], V[i]
         heapify(V, n, largest, limit)
