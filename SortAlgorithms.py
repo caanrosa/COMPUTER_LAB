@@ -155,11 +155,11 @@ def quick_sort(data, time):
     return (limit.lastData if limit.lastData else data, limit)
 
 def __quick_sort(V, low, high, limit):
-    if low < high:
-        if limit.reachedLimit():
+    if limit.reachedLimit():
             limit.setLastData(V)  # Guarda el progreso antes de detenerse
             return
-        
+
+    if low < high:
         pi = __partition(V, low, high)
         
         if DEBUG: print(V)
@@ -168,7 +168,6 @@ def __quick_sort(V, low, high, limit):
         __quick_sort(V, pi + 1, high, limit)
         if DEBUG: print(V)
 
-        limit.setLastData(V)  # Guarda el progreso después de cada partición
 
 def __partition(V, low, high):
     pivot = V[high]
