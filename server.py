@@ -8,6 +8,7 @@ import pickle
 import struct
 from SortAlgorithms import merge_sort, heap_sort, quick_sort
 from Client import *
+import timeit
 
 # Configuration Parameters
 IP_ADDRESS = CONFIG_PARAMS['WORKER0_IP_ADDRESS']
@@ -114,9 +115,11 @@ class Worker():
                                 res = worker1.sortedVector
                                 waiting = False   
                         pass
-
+                    
+                
                 #print(res)
                 printSubtitle("Enviando resultado a cliente")  
+                self.sendToClient(f"Tomó {timeit.default_timer() - limit.start}s", client_socket)
                 self.sendToClient(res, client_socket)
                         
         except Exception:
