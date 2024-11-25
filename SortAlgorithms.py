@@ -118,45 +118,41 @@ def __divide(V: list):#
     
 # HEAP
 def heap_sort(data, time):
-    printTitle("Usando Heapsort")
+    print("Usando Heapsort")
     limit = Timelimit(time)
+
+    # Construir el montículo y verificar el tiempo límite
+    n = len(data)
+    for i in range(n // 2 - 1, -1, -1):
+        if limit.reachedLimit():
+            print("Tiempo límite alcanzado durante la construcción del heap.")
+            return data, True
+        heapify(data, n, i)
     
-    data = heapsort(data)
+    # Extraer elementos del heap
+    for i in range(n - 1, 0, -1):
+        if limit.reachedLimit():
+            print("Tiempo límite alcanzado durante la extracción de elementos.")
+            return data, True
+        data[0], data[i] = data[i], data[0]
+        heapify(data, i, 0)
     
-    return data, limit
+    return data, limit.reachedLimit()
+
 
 def heapify(V, n, i):
-    
-    largest = i  # Asumimos que el nodo raíz es el más grande
-    left = 2 * i + 1  # Índice del hijo izquierdo
-    right = 2 * i + 2  # Índice del hijo derecho
+    largest = i  # Nodo raíz
+    left = 2 * i + 1
+    right = 2 * i + 2
 
-    # Verificar si el hijo izquierdo existe y es mayor que la raíz
     if left < n and V[left] > V[largest]:
         largest = left
-
-    # Verificar si el hijo derecho existe y es mayor que la raíz actual
     if right < n and V[right] > V[largest]:
         largest = right
-
-    # Si el nodo raíz no es el más grande, intercambiarlo con el más grande
     if largest != i:
         V[i], V[largest] = V[largest], V[i]
         heapify(V, n, largest)
 
-def heapsort(V):
-    n = len(V)
-
-    # Construir el montículo máximo (heap)
-    for i in range(n // 2 - 1, -1, -1):
-        heapify(V, n, i)
-
-    # Extraer elementos del montículo uno por uno
-    for i in range(n - 1, 0, -1):
-        V[0], V[i] = V[i], V[0]
-        heapify(V, i, 0)
-    
-    return V  # Devolver la lista ordenada
 
 # QUICK
 def quick_sort(data, time, queue: List = []):
