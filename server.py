@@ -94,7 +94,17 @@ class Worker():
                             if(worker1.sortedVector):
                                 res = worker1.sortedVector
                                 waiting = False                            
-
+                    if(type == 3):
+                        worker1 = Client("Worker1", CONFIG_PARAMS['WORKER1_IP_ADDRESS'], CONFIG_PARAMS['WORKER1_PORT'])
+                        worker1.setVector(res)
+                        worker1.sort(type, 0, res.index(limit.lastData[0]))
+                        printSubtitle("Esperando respuesta de Worker_1...")
+                        
+                        waiting = True
+                        while(waiting):
+                            if(worker1.sortedVector):
+                                res = worker1.sortedVector
+                                waiting = False  
                 #print(res)
                 printSubtitle("Enviando resultado a cliente")  
                 self.sendToClient(res, client_socket)
